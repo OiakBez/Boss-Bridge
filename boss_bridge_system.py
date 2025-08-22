@@ -40,14 +40,16 @@ class BossBridgeSystem:
     def init_db(self):
         """Inicializa o banco de dados SQLite com todas as tabelas necessárias"""
         try:
-            self.conn = sqlite3.connect('boss_bridge.db')
+            db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boss_bridge.db")
+            self.conn = sqlite3.connect(db_path)
             self.cursor = self.conn.cursor()
-            
+            print("Banco de dados em:", db_path)
+
             # Tabela de usuários (investidores)
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome_completo TEXT NOT NULL,
+                    nome TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
                     genero TEXT,
                     senha TEXT NOT NULL,
@@ -545,7 +547,7 @@ class BossBridgeSystem:
             
             # Inserir no banco de dados
             self.cursor.execute(
-                "INSERT INTO users (nome_completo, email, genero, numero, senha) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO users (nome, email, genero, numero, senha) VALUES (?, ?, ?, ?, ?)",
                 (nome, email, genero, numero, hashed_password)
             )
             self.conn.commit()
@@ -613,7 +615,7 @@ class BossBridgeSystem:
             hashed_password = self.hash_password(senha)
             
             # Verificar se é um usuário
-            self.cursor.execute("SELECT id, nome_completo FROM users WHERE email = ? AND senha = ?", 
+            self.cursor.execute("SELECT id, nome FROM users WHERE email = ? AND senha = ?", 
                                (email, hashed_password))
             user = self.cursor.fetchone()
             
@@ -927,7 +929,7 @@ class BossBridgeSystem:
             # Obter dados do perfil
             if self.user_type == "user":
                 self.cursor.execute(
-                    "SELECT nome_completo, email, genero, numero, data_criacao FROM users WHERE id = ?",
+                    "SELECT nome, email, genero, numero, data_criacao FROM users WHERE id = ?",
                     (self.current_user,)
                 )
                 user_data = self.cursor.fetchone()
